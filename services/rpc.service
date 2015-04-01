@@ -1,0 +1,24 @@
+#
+# this script initializes an autobahn rpc
+# this requires that the pg.service is running
+# this requires not to run on the same machine as pg.service
+#
+[Unit]
+Description=Runtime Autobahn RPC
+After=router.service
+#Requires=pg.service
+
+[Service]
+Restart=always
+ExecStartPre=-/usr/bin/env docker kill rpc
+ExecStartPre=-/usr/bin/env docker rm rpc
+ExecStartPre=/usr/bin/env docker pull tacodata/abroute-docker-rpc
+ExecStart=/usr/bin/env docker run --publish 8080 --name rpc tacodata/abroute-docker-rpc
+ExecStop=-/usr/bin/docker stop rpc
+
+[Install]
+WantedBy = multi-user.target
+
+[X-Fleet]
+Conflicts=router.service
+Conflicts=pg.service

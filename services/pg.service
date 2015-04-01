@@ -1,0 +1,24 @@
+#
+# this script initializes a postgres database
+# for use with downstream containers
+#
+[Unit]
+Description=Runtime Postgrepg Database
+After=flanneld.service docker.service etcd.service skydns.service abdata.service
+Requires=flanneld.service docker.service etcd.service skydns.service abdata.service
+
+[Service]
+Restart=always
+ExecStartPre=-/usr/bin/env docker kill pg
+ExecStartPre=-/usr/bin/env docker rm pg
+ExecStartPre=/usr/bin/env docker pull tacodata/abroute-docker-postgres
+ExecStartPre=/usr/bin/env etcdctl set /skydns/net/tacodata/pg/cname '{"host":"abroute-docker-postgres.tacodata.net","port":5432}'
+ExecStart=/usr/bin/env docker run --name pg --volumes-from abdata --link abdata:abdata tacodata/abroute-docker-postgres
+ExecStop=-/usr/bin/docker stop pg
+ExecStopPost=/usr/bin/env etcdctl rm /skydns/net/tacodata/pg/cname
+
+[Install]
+WantedBy = multi-user.target
+
+[X-Fleet]
+MachineOf=abdata.service

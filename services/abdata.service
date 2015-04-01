@@ -1,0 +1,20 @@
+#
+# this script initializes a postgres database
+# for use with downstream containers
+#
+[Unit]
+Description=Initialize Database
+After=flanneld.service docker.service etcd.service skydns.service
+Requires=flanneld.service docker.service etcd.service skydns.service
+
+[Service]
+Restart=always
+ExecStartPre=-/usr/bin/env docker kill abdata
+ExecStartPre=-/usr/bin/env docker rm abdata
+ExecStartPre=/usr/bin/env docker pull tacodata/abroute-docker-db
+ExecStart=/usr/bin/env docker run --expose 8000 --name abdata tacodata/abroute-docker-db 8000
+ExecStop=-/usr/bin/docker stop abdata
+
+[Install]
+WantedBy = multi-user.target
+
