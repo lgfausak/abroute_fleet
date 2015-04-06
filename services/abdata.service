@@ -4,8 +4,10 @@
 #
 [Unit]
 Description=Initialize Database
-After=flanneld.service docker.service etcd.service skydns.service
-Requires=flanneld.service docker.service etcd.service skydns.service
+After=flanneld.service
+After=docker.service
+Requires=flanneld.service
+Requires=docker.service
 
 [Service]
 Restart=always
@@ -14,7 +16,4 @@ ExecStartPre=-/usr/bin/env docker rm abdata
 ExecStartPre=/usr/bin/env docker pull tacodata/abroute-docker-db
 ExecStart=/usr/bin/env docker run --expose 8000 --name abdata tacodata/abroute-docker-db 8000
 ExecStop=-/usr/bin/docker stop abdata
-
-[Install]
-WantedBy = multi-user.target
 

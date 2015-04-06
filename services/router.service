@@ -6,20 +6,18 @@
 [Unit]
 Description=Runtime Autobahn Router
 After=pg.service
-#Requires=pg.service
+#BindsTo=pg.service
+Wants=pg.service
 
 [Service]
 Restart=always
 ExecStartPre=-/usr/bin/env docker kill router
 ExecStartPre=-/usr/bin/env docker rm router
 ExecStartPre=/usr/bin/env docker pull tacodata/abroute-docker-autobahn
-ExecStartPre=/usr/bin/env etcdctl set /skydns/net/tacodata/router/cname '{"host":"abroute-docker-autobahn.tacodata.net","port":5432}'
-ExecStart=/usr/bin/env docker run --publish 8080 --name router tacodata/abroute-docker-autobahn
+#ExecStartPre=/usr/bin/env etcdctl set /skydns/net/tacodata/router/cname '{"host":"abroute-docker-autobahn.tacodata.net","port":5432}'
+ExecStart=/usr/bin/env docker run --publish 8080:8080 --name router -e SERVICE_NAME=router tacodata/abroute-docker-autobahn
 ExecStop=-/usr/bin/docker stop router
-ExecStopPost=/usr/bin/env etcdctl rm /skydns/net/tacodata/router/cname
-
-[Install]
-WantedBy = multi-user.target
+#ExecStopPost=/usr/bin/env etcdctl rm /skydns/net/tacodata/router/cname
 
 [X-Fleet]
 Conflicts=pg.service
